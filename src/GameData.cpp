@@ -757,9 +757,26 @@ void GameData::onNukeDetect(BWAPI::Position target)
 	replayDat << Broodwar->getFrameCount() << "," << "-1" << ",NuclearLaunch,(" << target.x << "," << target.y << ")\n";
 }
 
+std::list<int> visibility(BWAPI::PositionOrUnit target) {
+	std::list<int> visible;
+	for (auto p : Broodwar->getPlayers()) Broodwar->setVision(p, false);
+	for (auto p : Broodwar->getPlayers()) {
+		if (p->isObserver() || p->isNeutral()) continue;
+		Broodwar->setVision(p, true);
+		visible.push_back(Broodwar->isVisible((TilePosition)target.getPosition()));
+		Broodwar->setVision(p, false);
+	}
+	for (auto p : Broodwar->getPlayers()) Broodwar->setVision(p, true);
+	return visible;
+}
+
 void GameData::onUnitCreate(BWAPI::Unit unit)
 {
-	replayDat << Broodwar->getFrameCount() << "," << unit->getPlayer()->getID() << ",Created," << unit->getID() << "," << unit->getType().getName() << ",(" << unit->getPosition().x << "," << unit->getPosition().y << ")\n";
+	replayDat << Broodwar->getFrameCount() << ","
+		<< unit->getPlayer()->getID() << ",Created," << unit->getID() << "," << unit->getType().getName()
+		<< ",(" << unit->getPosition().x << "," << unit->getPosition().y << ")";
+	//for (auto playerVis : visibility(unit)) replayDat << "," << int(playerVis);
+	replayDat << "\n";
 
 	if (unit->getType() != BWAPI::UnitTypes::Zerg_Larva) {
 		if (activePlayers.find(unit->getPlayer()) != activePlayers.end()) { // is from an active Player
@@ -775,7 +792,10 @@ void GameData::onUnitDestroy(BWAPI::Unit unit)
 {
 	if (CREATE_RLD) onNewAttack(unit);
 
-	replayDat << Broodwar->getFrameCount() << "," << unit->getPlayer()->getID() << ",Destroyed," << unit->getID() << "," << unit->getType().getName() << ",(" << unit->getPosition().x << "," << unit->getPosition().y << ")\n";
+	replayDat << Broodwar->getFrameCount() << "," << unit->getPlayer()->getID() << ",Destroyed," << unit->getID() << "," << unit->getType().getName() << ",(" << unit->getPosition().x << "," << unit->getPosition().y << ")";
+	//for (auto playerVis : visibility(unit)) replayDat << "," << int(playerVis);
+	replayDat << "\n";
+
 	for (const auto& p : activePlayers) {
 		if (p != unit->getPlayer()) {
 			unseenUnits[p].erase(std::pair<Unit, UnitType>(unit, unit->getType()));
@@ -926,7 +946,10 @@ std::map<BWAPI::Player, BWAPI::Unitset> GameData::getPlayerMilitaryUnitsNotInAtt
 
 void GameData::onUnitMorph(BWAPI::Unit unit)
 {
-	replayDat << Broodwar->getFrameCount() << "," << unit->getPlayer()->getID() << ",Morph," << unit->getID() << "," << unit->getType().getName() << ",(" << unit->getPosition().x << "," << unit->getPosition().y << ")\n";
+	replayDat << Broodwar->getFrameCount() << "," << unit->getPlayer()->getID() << ",Morph," << unit->getID() << "," << unit->getType().getName() << ",(" << unit->getPosition().x << "," << unit->getPosition().y << ")";
+	//for (auto playerVis : visibility(unit)) replayDat << "," << int(playerVis);
+	replayDat << "\n";
+
 	for (const auto& p : activePlayers) {
 		if (unit->getType() != BWAPI::UnitTypes::Zerg_Egg) {
 			if (p != unit->getPlayer()) {
@@ -969,7 +992,10 @@ void GameData::onUnitMorph(BWAPI::Unit unit)
 
 void GameData::onUnitRenegade(BWAPI::Unit unit)
 {
-	replayDat << Broodwar->getFrameCount() << "," << unit->getPlayer()->getID() << ",ChangedOwnership," << unit->getID() << "\n";
+	replayDat << Broodwar->getFrameCount() << "," << unit->getPlayer()->getID() << ",ChangedOwnership," << unit->getID() << ")";
+	//for (auto playerVis : visibility(unit)) replayDat << "," << int(playerVis);
+	replayDat << "\n";
+
 	for (const auto& p : activePlayers) {
 		if (p != unit->getPlayer()) {
 			if (activePlayers.find(unit->getPlayer()) != activePlayers.end()) {

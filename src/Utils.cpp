@@ -1,10 +1,10 @@
 #include "Utils.h"
 
 // config variables
-bool CREATE_RGD = false;
+bool CREATE_RGD = true;
 bool CREATE_RLD = false;
-bool CREATE_ROD = false;
-bool CREATE_RCD = false;
+bool CREATE_ROD = true;
+bool CREATE_RCD = true;
 bool CREATE_ASD = true;
 
 int REPLAY_TIME_LIMIT = 60 * 45 * 24;
